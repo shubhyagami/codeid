@@ -36,6 +36,8 @@ build/
 .DS_Store
 
 **/node_modules/
+!src/main/resources/static/lib/node_modules/
+!src/main/resources/static/lib/node_modules/**
 
 ### Custom App Data ###
 ide-db.mv.db
