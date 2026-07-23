@@ -1,4 +1,4 @@
-﻿let editor = null;
+let editor = null;
 let openTabs = [];
 let activeFilePath = null;
 let fileTreeData = null;
@@ -15,7 +15,7 @@ const IDE = {
     },
 
     initMonaco() {
-        require.config({ paths: { vs: '/lib/node_modules/monaco-editor/min/vs' } });
+        require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
         require(['vs/editor/editor.main'], () => {
             monaco.editor.defineTheme('intellij-dark', {
                 base: 'vs-dark',
@@ -1238,9 +1238,7 @@ const VideoPlayer = {
             .then(data => {
                 this.playlist = data;
                 this.renderPlaylist();
-                if (this.playlist.length > 0) {
-                    this.playTrack(0, false);
-                }
+                // Removed playTrack(0, false) so it doesn't load the first video automatically
             })
             .catch(e => console.error('Failed to load video list', e));
     },
