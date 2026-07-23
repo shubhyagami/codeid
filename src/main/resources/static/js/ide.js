@@ -216,7 +216,7 @@ const IDE = {
                 }
             });
 
-            monaco.editor.registerCompletionProvider('java', {
+            monaco.languages.registerCompletionItemProvider('java', {
                 provideCompletionItems: (model, position) => {
                     const word = model.getWordUntilPosition(position);
                     const range = {
