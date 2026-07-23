@@ -33,6 +33,9 @@ WORKDIR /app
 # Copy the built jar from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
+# Copy the Video Music directory to the run stage so VideoController can find it
+COPY --from=build /app/src/main/resources/Video\ Music ./src/main/resources/Video\ Music
+
 # Spring Boot defaults to 8080. If your app properties set 8082, 
 # Render will automatically map the port you expose, but 
 # it's best to allow the PORT environment variable to override it.
