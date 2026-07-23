@@ -1223,6 +1223,23 @@ const VideoPlayer = {
         });
 
         this.videoEl.addEventListener('ended', () => this.playNext());
+
+        this.videoEl.addEventListener('waiting', () => {
+            const loader = document.getElementById('video-loader');
+            if (loader) loader.style.display = 'block';
+        });
+
+        this.videoEl.addEventListener('playing', () => {
+            const loader = document.getElementById('video-loader');
+            if (loader) loader.style.display = 'none';
+        });
+
+        this.videoEl.addEventListener('canplay', () => {
+            if (!this.isPlaying) {
+                const loader = document.getElementById('video-loader');
+                if (loader) loader.style.display = 'none';
+            }
+        });
     },
 
     formatTime(seconds) {
@@ -1269,14 +1286,21 @@ const VideoPlayer = {
         const video = this.playlist[index];
         this.videoEl.src = `/api/video/stream?file=${encodeURIComponent(video)}`;
         
+        const loader = document.getElementById('video-loader');
+        if (loader) loader.style.display = 'block';
+
         if (autoPlay) {
             this.videoEl.play().then(() => {
                 this.isPlaying = true;
                 this.updateUI();
-            }).catch(e => console.error("Playback failed", e));
+            }).catch(e => {
+                console.error("Playback failed", e);
+                if (loader) loader.style.display = 'none';
+            });
         } else {
             this.isPlaying = false;
             this.updateUI();
+            if (loader) loader.style.display = 'none';
         }
     },
 
