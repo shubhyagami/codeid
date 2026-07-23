@@ -1145,6 +1145,8 @@ const VideoPlayer = {
     playlist: [],
     currentIndex: -1,
     isPlaying: false,
+    currentFetchController: null,
+    currentObjectUrl: null,
 
     init() {
         this.videoEl = document.getElementById('live-wallpaper');
@@ -1282,26 +1284,54 @@ const VideoPlayer = {
             }
         }
 
+        if (this.currentFetchController) {
+            this.currentFetchController.abort();
+        }
+        this.currentFetchController = new AbortController();
+
+        if (this.currentObjectUrl) {
+            URL.revokeObjectURL(this.currentObjectUrl);
+            this.currentObjectUrl = null;
+        }
+
         this.currentIndex = index;
         const video = this.playlist[index];
-        this.videoEl.src = `/api/video/stream?file=${encodeURIComponent(video)}`;
+        const url = `/api/video/stream?file=${encodeURIComponent(video)}`;
         
         const loader = document.getElementById('video-loader');
         if (loader) loader.style.display = 'block';
+        
+        this.updateUI(); // Update UI immediately to show selected track
 
-        if (autoPlay) {
-            this.videoEl.play().then(() => {
-                this.isPlaying = true;
-                this.updateUI();
-            }).catch(e => {
-                console.error("Playback failed", e);
-                if (loader) loader.style.display = 'none';
+        fetch(url, { signal: this.currentFetchController.signal })
+            .then(res => {
+                if (!res.ok) throw new Error("Failed to fetch video");
+                return res.blob();
+            })
+            .then(blob => {
+                this.currentObjectUrl = URL.createObjectURL(blob);
+                this.videoEl.src = this.currentObjectUrl;
+
+                if (autoPlay) {
+                    this.videoEl.play().then(() => {
+                        this.isPlaying = true;
+                        this.updateUI();
+                    }).catch(e => {
+                        console.error("Playback failed", e);
+                        if (loader) loader.style.display = 'none';
+                    });
+                } else {
+                    this.isPlaying = false;
+                    this.updateUI();
+                    if (loader) loader.style.display = 'none';
+                }
+            })
+            .catch(err => {
+                if (err.name !== 'AbortError') {
+                    console.error('Failed to download video', err);
+                    if (loader) loader.style.display = 'none';
+                }
             });
-        } else {
-            this.isPlaying = false;
-            this.updateUI();
-            if (loader) loader.style.display = 'none';
-        }
     },
 
     togglePlay() {
